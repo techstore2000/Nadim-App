@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard | Smarttec</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body onload="authCheck(); ladeEintraege();">
+
+  <header class="main-header">
+    <div class="logo">Smarttec</div>
+    <input type="checkbox" id="menu-toggle">
+    <label for="menu-toggle" class="menu-icon">&#9776;</label>
+
+    <nav class="nav-menu">
+      <a href="dashboard.html">🏠 Start</a>
+      <a href="#" onclick="ladeEintraege()">📁 Kasse</a>
+      <div class="dropdown">
+        <a href="#">📱 Handys ▼</a>
+        <div class="dropdown-content">
+          <a href="#" onclick="filterMarke('Apple')">Apple</a>
+          <a href="#" onclick="filterMarke('Samsung')">Samsung</a>
+          <a href="#" onclick="filterMarke('Xiaomi')">Xiaomi</a>
+        </div>
+      </div>
+      <a href="#" onclick="exportPDF()">📄 PDF</a>
+      <a href="#" onclick="exportExcel()">📈 Excel</a>
+      <a href="admin.html" id="adminLink">👤 Admin</a>
+      <a href="#" onclick="logout()">🔒 Logout</a>
+    </nav>
+  </header>
+
+  <div class="suchfeld">
+    <input type="text" id="sucheInput" oninput="filterSuche()" placeholder="Suche z. B. 1.5.2025" />
+  </div>
+
+  <main>
+    <section>
+      <h2>Kassen-Eintrag</h2>
+      <input type="date" id="datum" />
+      <input type="text" id="kasse" placeholder="Kasse" />
+      <input type="text" id="guthaben" placeholder="Guthaben verkauft" />
+      <input type="text" id="ware" placeholder="Gekaufte Ware" />
+      <input type="text" id="produkt" placeholder="Produkt" />
+      <input type="text" id="auszahlung" placeholder="Auszahlung Grund" />
+      <input type="text" id="rueckgabe" placeholder="Rückgabe" />
+      <button onclick="eintragSpeichern()">Speichern</button>
+    </section>
+
+    <section>
+      <h2>📱 Handy-Eintrag</h2>
+      <input type="text" id="handyModell" placeholder="Modell (z. B. iPhone 12)" />
+      <input type="text" id="handyFarbe" placeholder="Farbe (z. B. Schwarz)" />
+      <input type="number" id="handyGB" placeholder="Gigabyte (z. B. 128)" />
+      <input type="text" id="handySN" placeholder="Seriennummer" />
+      <input type="text" id="handyIMEI" placeholder="IMEI" />
+      <input type="number" id="handyBatterie" placeholder="Batteriezustand in %" />
+      <select id="handyZustand">
+        <option value="">Zustand auswählen</option>
+        <option value="Neu">Neu</option>
+        <option value="Gebraucht">Gebraucht</option>
+      </select>
+      <input type="date" id="handyEinkauf" placeholder="Einkaufsdatum" />
+      <input type="date" id="handyVerkauf" placeholder="Verkaufsdatum" />
+      <select id="handyVerpackung">
+        <option value="">Verpackung verfügbar?</option>
+        <option value="Ja">Ja</option>
+        <option value="Nein">Nein</option>
+      </select>
+      <select id="handyMarke">
+        <option value="">Marke auswählen</option>
+        <option value="Apple">Apple</option>
+        <option value="Samsung">Samsung</option>
+        <option value="Xiaomi">Xiaomi</option>
+        <option value="Andere">Andere</option>
+      </select>
+      <input type="number" id="handyGuthaben" placeholder="Verkaufswert in €" />
+      <input type="hidden" id="handyBearbeitenId" />
+      <button onclick="handySpeichern()">📦 Handy speichern</button>
+    </section>
+
+    <section>
+      <div id="eintragsListe"></div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

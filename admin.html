@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin-Bereich | Smarttec</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body onload="ladeBenutzerliste()">
+  <header>
+    <h1>👤 Admin-Bereich</h1>
+    <a href="dashboard.html">🔙 Zurück</a>
+  </header>
+
+  <main>
+    <section>
+      <h2>Neuen Benutzer erstellen</h2>
+      <input type="text" id="neuerBenutzer" placeholder="Benutzername">
+      <input type="password" id="neuesPasswort" placeholder="Passwort">
+      <button onclick="benutzerHinzufuegen()">➕ Hinzufügen</button>
+    </section>
+
+    <section>
+      <h2>Bestehende Benutzer</h2>
+      <div id="benutzerListe"></div>
+    </section>
+  </main>
+
+  <script>
+    function ladeBenutzerliste() {
+      const container = document.getElementById("benutzerListe");
+      container.innerHTML = "";
+      const nutzer = JSON.parse(localStorage.getItem("nutzerListe")) || {};
+
+      for (const name in nutzer) {
+        const div = document.createElement("div");
+        div.className = "form-group";
+        div.innerHTML = `
+          <strong>${name}</strong>
+          <button onclick="benutzerLoeschen('${name}')">🗑️ Löschen</button>
+          <button onclick="passwortAendern('${name}')">✏️ Passwort ändern</button>
+        `;
+        container.appendChild(div);
+      }
+    }
+
+    function benutzerHinzufuegen() {
+      const name = document.getElementById("neuerBenutzer").value;
+      const pw = document.getElementById("neuesPasswort").value;
+      if (!name || !pw) return alert("Bitte Benutzername und Passwort eingeben.");
+      const nutzer = JSON.parse(localStorage.getItem("nutzerListe")) || {};
+      nutzer[name] = pw;
+      localStorage.setItem("nutzerListe", JSON.stringify(nutzer));
+      ladeBenutzerliste();
+    }
+
+    function benutzerLoeschen(name) {
+      if (!confirm(`Benutzer ${name} wirklich löschen?`)) return;
+      const nutzer = JSON.parse(localStorage.getItem("nutzerListe")) || {};
+      delete nutzer[name];
+      localStorage.setItem("nutzerListe", JSON.stringify(nutzer));
+      ladeBenutzerliste();
+    }
+
+    function passwortAendern(name) {
+      const neu = prompt("Neues Passwort für " + name);
+      if (!neu) return;
+      const nutzer = JSON.parse(localStorage.getItem("nutzerListe")) || {};
+      nutzer[name] = neu;
+      localStorage.setItem("nutzerListe", JSON.stringify(nutzer));
+      ladeBenutzerliste();
+    }
+  </script>
+</body>
+</html>
