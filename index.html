@@ -15,18 +15,7 @@
     <button onclick="login()">Login</button>
   </div>
 
-  <script>
-    function login() {
-      const user = document.getElementById("benutzername").value;
-      const pw = document.getElementById("passwort").value;
-
-      if (user === "Nadim" && pw === "Midanmirzazada1984@@") {
-        sessionStorage.setItem("nutzer", user);
-        window.location.href = "dashboard.html";
-      } else {
-        alert("Falscher Benutzername oder Passwort!");
-      }
-    }
-  </script>
+  <!-- WICHTIG: Nur diese JS-Datei einbinden -->
+  <script src="script.js"></script>
 </body>
 </html>

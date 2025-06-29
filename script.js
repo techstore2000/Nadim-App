@@ -1,21 +1,35 @@
-// Login
+// === LOGIN & AUTH ===
 function login() {
-  const nutzer = document.getElementById("benutzername").value;
-  const pass = document.getElementById("passwort").value;
+  const benutzername = document.getElementById("benutzername").value;
+  const passwort = document.getElementById("passwort").value;
+  const nutzerListe = JSON.parse(localStorage.getItem("nutzerListe")) || {};
 
-  if (nutzer === "Nadim" && pass === "Midanmirzazada1984@@") {
-    sessionStorage.setItem("nutzer", "Nadim");
+  console.log("Benutzername:", benutzername);  // Debugging-Ausgabe für den Benutzernamen
+  console.log("Gespeicherte Benutzerliste:", nutzerListe);  // Debugging-Ausgabe für die Benutzerliste
+
+  // Überprüfen des Benutzernamens und des Passworts
+  if (
+    (benutzername === "Nadim" && passwort === "Midanmirzazada1984@@") || 
+    (nutzerListe[benutzername] && nutzerListe[benutzername] === passwort)
+  ) {
+    sessionStorage.setItem("nutzer", benutzername);
     window.location.href = "dashboard.html";
   } else {
-    alert("Falscher Benutzername oder Passwort.");
+    alert("Falscher Benutzername oder Passwort");
   }
 }
 
-// Authentifizierung
 function authCheck() {
   const user = sessionStorage.getItem("nutzer");
   if (!user) window.location.href = "index.html";
-  if (user === "Nadim") document.getElementById("adminLink").innerHTML = '<a href="admin.html">👤 Admin</a>';
+
+  const adminLink = document.getElementById("adminLink");
+  if (adminLink) adminLink.style.display = user === "Nadim" ? "inline-block" : "none";
+
+  if (user !== "Nadim") {
+    const eingeschraenkt = document.querySelectorAll(".bearbeiten, .loeschen");
+    eingeschraenkt.forEach(el => el.style.display = "none");
+  }
 }
 
 function logout() {
@@ -23,13 +37,28 @@ function logout() {
   window.location.href = "index.html";
 }
 
-// Deutsch formatiertes Datum
+function neuerBenutzer() {
+  const name = prompt("Benutzername:");
+  const pw = prompt("Passwort:");
+  if (name && pw) {
+    const nutzerListe = JSON.parse(localStorage.getItem("nutzerListe")) || {};
+    nutzerListe[name] = pw;
+
+    // Speichern der neuen Benutzerliste im localStorage
+    localStorage.setItem("nutzerListe", JSON.stringify(nutzerListe));
+
+    console.log("Neue Benutzerliste:", nutzerListe);  // Debugging-Ausgabe
+
+    alert("Benutzer hinzugefügt");
+  }
+}
+
+// === DATUM & GRUPPIERUNG ===
 function formatDatumDeutsch(datum) {
   const d = new Date(datum);
   return d.toLocaleDateString("de-DE");
 }
 
-// Gruppierung nach Monat
 function gruppiereNachMonat(eintraege) {
   const gruppiert = {};
   eintraege.forEach(e => {
@@ -41,14 +70,13 @@ function gruppiereNachMonat(eintraege) {
   return gruppiert;
 }
 
-// Formular-Sichtbarkeit
 function zeigeFormular(typ) {
   document.querySelector("section[data-form='kasse']").style.display = typ === 'kasse' ? 'block' : 'none';
   document.querySelector("section[data-form='handy']").style.display = typ === 'handy' ? 'block' : 'none';
   ladeEintraege();
 }
 
-// Kasse laden
+// === KASSE ===
 function ladeEintraege() {
   const liste = document.getElementById("eintragsListe");
   if (!liste) return;
@@ -73,40 +101,6 @@ function ladeEintraege() {
   }
 }
 
-// Handy laden
-function ladeHandys() {
-  const liste = document.getElementById("eintragsListe");
-  if (!liste) return;
-  liste.innerHTML = "";
-  const handys = JSON.parse(localStorage.getItem("smarttecHandys")) || [];
-  const gruppiert = gruppiereNachMonat(handys);
-
-  for (const monat in gruppiert) {
-    const header = document.createElement("h3");
-    header.textContent = `📅 ${monat}`;
-    liste.appendChild(header);
-    gruppiert[monat].forEach(h => {
-      const div = document.createElement("div");
-      div.className = "form-group";
-      const qrId = "qr_" + h.barcode;
-
-      div.innerHTML = `
-        <strong>${h.modell}</strong> (${h.marke})<br>
-        Farbe: ${h.farbe} | ${h.gb}GB | Zustand: ${h.zustand}<br>
-        SN: ${h.sn} | IMEI: ${h.imei}<br>
-        Einkauf: ${formatDatumDeutsch(h.einkauf)} | Verkauf: ${formatDatumDeutsch(h.verkauf)}<br>
-        Verpackung: ${h.verpackung}<br>
-        <div id="${qrId}" class="qrcode"></div>
-        <div style="text-align:center;">${h.barcode}</div>
-      `;
-
-      liste.appendChild(div);
-      new QRCode(document.getElementById(qrId), `Wert: ${h.guthaben || "?"} €`);
-    });
-  }
-}
-
-// Kasse speichern
 function eintragSpeichern() {
   const daten = JSON.parse(localStorage.getItem("smarttecDaten")) || [];
   daten.push({
@@ -122,7 +116,37 @@ function eintragSpeichern() {
   ladeEintraege();
 }
 
-// Handy speichern
+// === HANDYS ===
+function ladeHandys() {
+  const liste = document.getElementById("eintragsListe");
+  if (!liste) return;
+  liste.innerHTML = "";
+  const handys = JSON.parse(localStorage.getItem("smarttecHandys")) || [];
+  const gruppiert = gruppiereNachMonat(handys);
+
+  for (const monat in gruppiert) {
+    const header = document.createElement("h3");
+    header.textContent = `📅 ${monat}`;
+    liste.appendChild(header);
+    gruppiert[monat].forEach(h => {
+      const div = document.createElement("div");
+      div.className = "form-group";
+      const qrId = "qr_" + h.barcode;
+      div.innerHTML = `
+        <strong>${h.modell}</strong> (${h.marke})<br>
+        Farbe: ${h.farbe} | ${h.gb}GB | Zustand: ${h.zustand}<br>
+        SN: ${h.sn} | IMEI: ${h.imei}<br>
+        Einkauf: ${formatDatumDeutsch(h.einkauf)} | Verkauf: ${formatDatumDeutsch(h.verkauf)}<br>
+        Verpackung: ${h.verpackung}<br>
+        <div id="${qrId}" class="qrcode"></div>
+        <div style="text-align:center;">${h.barcode}</div>
+      `;
+      liste.appendChild(div);
+      new QRCode(document.getElementById(qrId), `Wert: ${h.guthaben || "?"} €`);
+    });
+  }
+}
+
 function handySpeichern() {
   const handys = JSON.parse(localStorage.getItem("smarttecHandys")) || [];
   const barcode = "HND" + Date.now();
@@ -145,7 +169,7 @@ function handySpeichern() {
   ladeHandys();
 }
 
-// Suche mit Vorschlägen
+// === SUCHE ===
 function filterSuche() {
   const suchbegriff = document.getElementById("sucheInput").value.toLowerCase();
   const alle = document.querySelectorAll(".form-group");
@@ -154,19 +178,16 @@ function filterSuche() {
   });
 }
 
-// Filter nach Marke
 function filterMarke(marke) {
   const alle = JSON.parse(localStorage.getItem("smarttecHandys")) || [];
   const gefiltert = alle.filter(h => h.marke && h.marke.toLowerCase().includes(marke.toLowerCase()));
   const liste = document.getElementById("eintragsListe");
   if (!liste) return;
   liste.innerHTML = "";
-
   gefiltert.forEach(h => {
     const div = document.createElement("div");
     div.className = "form-group";
     const qrId = "qr_" + h.barcode;
-
     div.innerHTML = `
       <strong>${h.modell}</strong> (${h.marke})<br>
       Farbe: ${h.farbe} | ${h.gb}GB | Zustand: ${h.zustand}<br>
@@ -176,18 +197,16 @@ function filterMarke(marke) {
       <div id="${qrId}" class="qrcode"></div>
       <div style="text-align:center;">${h.barcode}</div>
     `;
-
     liste.appendChild(div);
     new QRCode(document.getElementById(qrId), `Wert: ${h.guthaben || "?"} €`);
   });
 }
 
-// PDF Export
+// === EXPORT ===
 function exportPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   let y = 10;
-
   doc.setFontSize(14);
   doc.text("Kassen-Einträge", 10, y);
   y += 10;
@@ -196,9 +215,7 @@ function exportPDF() {
     doc.text(`- ${e.datum}: ${e.kasse}, ${e.guthaben}€, ${e.produkt}`, 10, y);
     y += 7;
   });
-
   y += 10;
-  doc.setFontSize(14);
   doc.text("Handy-Einträge", 10, y);
   y += 10;
   const handys = JSON.parse(localStorage.getItem("smarttecHandys")) || [];
@@ -206,21 +223,16 @@ function exportPDF() {
     doc.text(`- ${h.modell} (${h.marke}), ${h.gb}GB, SN: ${h.sn}, Code: ${h.barcode}`, 10, y);
     y += 7;
   });
-
   doc.save("Smarttec-Daten.pdf");
 }
 
-// Excel Export
 function exportExcel() {
   const wb = XLSX.utils.book_new();
   const kassen = JSON.parse(localStorage.getItem("smarttecDaten")) || [];
   const handys = JSON.parse(localStorage.getItem("smarttecHandys")) || [];
-
   const kassenSheet = XLSX.utils.json_to_sheet(kassen);
   const handySheet = XLSX.utils.json_to_sheet(handys);
-
   XLSX.utils.book_append_sheet(wb, kassenSheet, "Kasse");
   XLSX.utils.book_append_sheet(wb, handySheet, "Handys");
-
   XLSX.writeFile(wb, "Smarttec-Daten.xlsx");
 }
